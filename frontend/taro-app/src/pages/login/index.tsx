@@ -1,15 +1,19 @@
 import { View, Button } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
+import { useState } from 'react'
 import request from '../../utils/request'
 import './index.scss'
 
 export default function Login() {
+  const [loading, setLoading] = useState(false)
+
   useLoad(() => {
     console.log('Login page loaded')
   })
 
   const handleLogin = async () => {
     try {
+      setLoading(true)
       // 获取用户信息
       const userProfile = await Taro.getUserProfile({
         desc: '用于完善会员资料'
@@ -17,7 +21,6 @@ export default function Login() {
 
       // 获取微信登录凭证
       const { code } = await Taro.login()
-      console.log('微信登录凭证:', code)
       
       // 调用后端登录接口
       const res = await request<{
@@ -33,9 +36,6 @@ export default function Login() {
         method: 'POST',
         data: { code }
       })
-
-      console.log('登录响应:', res)
-      console.log('Token:', res.token)
 
       // 保存token和用户信息
       Taro.setStorageSync('token', res.token)
@@ -56,8 +56,6 @@ export default function Login() {
         }
       })
 
-      console.log('更新后的用户信息:', updatedUser)
-
       // 更新本地存储的用户信息
       Taro.setStorageSync('userInfo', updatedUser)
 
@@ -75,12 +73,19 @@ export default function Login() {
         title: '登录失败，请重试',
         icon: 'none'
       })
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <View className='login'>
-      <Button className='login-btn' onClick={handleLogin}>
+    <View className='login-container'>
+      <View className='bg-image' />
+      <Button
+        className='login-btn'
+        loading={loading}
+        onClick={handleLogin}
+      >
         微信一键登录
       </Button>
     </View>
