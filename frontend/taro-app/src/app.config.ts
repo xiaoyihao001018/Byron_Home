@@ -1,12 +1,12 @@
 export default defineAppConfig({
   pages: [
-    'pages/standardized/index',
-    'pages/index/index'
+    'pages/login/index',
+    'pages/home/index'
   ],
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#fff',
-    navigationBarTitleText: '登录',
+    navigationBarTitleText: 'Byron Home',
     navigationBarTextStyle: 'black'
   }
 })
