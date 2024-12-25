@@ -1,9 +1,10 @@
 export default defineAppConfig({
   pages: [
-    'pages/login/index',
     'pages/home/index',
+    'pages/record/index',
+    'pages/dates/index',
     'pages/profile/index',
-    'pages/record/index'
+    'pages/login/index'
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -29,6 +30,12 @@ export default defineAppConfig({
         text: '记录',
         iconPath: './assets/tabbar/record.png',
         selectedIconPath: './assets/tabbar/record-active.png'
+      },
+      {
+        pagePath: 'pages/dates/index',
+        text: '纪念日',
+        iconPath: './assets/tabbar/date.png',
+        selectedIconPath: './assets/tabbar/date-active.png'
       },
       {
         pagePath: 'pages/profile/index',

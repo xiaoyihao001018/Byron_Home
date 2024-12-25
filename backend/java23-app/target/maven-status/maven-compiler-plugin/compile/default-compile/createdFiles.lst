@@ -1,5 +1,8 @@
+org\example\enums\RepeatType.class
+org\example\enums\DateType.class
 org\example\service\RecordService.class
 org\example\config\RestTemplateConfig.class
+org\example\service\impl\MemorialDateServiceImpl.class
 org\example\entity\Record.class
 org\example\mapper\RecordMapper.class
 org\example\common\Result.class
@@ -9,14 +12,18 @@ org\example\controller\RecordController.class
 org\example\common\R.class
 org\example\service\UserService.class
 org\example\service\impl\RecordServiceImpl.class
+org\example\service\MemorialDateService.class
 org\example\Application.class
 org\example\interceptor\AuthInterceptor.class
+org\example\mapper\MemorialDateMapper.class
 org\example\utils\JwtUtils.class
+org\example\controller\MemorialDateController.class
 org\example\controller\UserController.class
 org\example\entity\User.class
 org\example\config\WebConfig.class
 org\example\mapper\UserMapper.class
 org\example\config\WxConfig.class
+org\example\entity\MemorialDate.class
 org\example\service\impl\UserServiceImpl.class
 org\example\utils\DatabaseConfig.class
 org\example\config\WxConfig$MiniappConfig.class
