@@ -1,40 +1,17 @@
-import { View, Text, Image } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import { View, Text } from '@tarojs/components'
+import { useLoad } from '@tarojs/taro'
 import './index.scss'
 
 export default function Home() {
   useLoad(() => {
-    // 检查登录状态
-    const userInfo = Taro.getStorageSync('userInfo')
-    if (!userInfo) {
-      Taro.redirectTo({
-        url: '/pages/login/index'
-      })
-    }
-    
-    Taro.setNavigationBarTitle({
-      title: '首页'
-    })
+    console.log('Home page loaded')
   })
 
-  const handleLogout = () => {
-    Taro.removeStorageSync('userInfo')
-    Taro.redirectTo({
-      url: '/pages/login/index'
-    })
-  }
-
-  const userInfo = Taro.getStorageSync('userInfo')
-
   return (
-    <View className='home'>
-      <View className='welcome'>
-        <Image className='avatar' src={userInfo?.avatarUrl} />
-        <Text>欢迎回来！</Text>
-        <Text className='username'>{userInfo?.nickName}</Text>
-      </View>
-      <View className='logout-btn' onClick={handleLogout}>
-        退出登录
+    <View className='home-container'>
+      <View className='content'>
+        <Text className='title'>首页</Text>
+        {/* 这里添加首页的主要内容 */}
       </View>
     </View>
   )
