@@ -13,9 +13,20 @@ spring:
     time-zone: GMT+8
     serialization:
       write-dates-as-timestamps: false
+  
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+    static-path-pattern: /uploads/**
+  
+  web:
+    resources:
+      static-locations: file:${upload.path}
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 mybatis-plus:
   configuration:
@@ -41,5 +52,9 @@ knife4j:
     language: zh-CN
 
 jwt:
-  secret: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ  # 至少32个字符
-  expiration: 86400000  # 24小时，以毫秒为单位
+  secret: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+  expiration: 86400000
+
+# 文件上传配置
+upload:
+  path: C:/uploads

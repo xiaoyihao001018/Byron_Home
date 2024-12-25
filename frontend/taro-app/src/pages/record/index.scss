@@ -1,0 +1,135 @@
+.record-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 40px;
+
+  .header {
+    padding: 20px;
+    background: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    .title {
+      font-size: 32px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .add-btn {
+      width: 180px;
+      height: 72px;
+      line-height: 72px;
+      background: #1296db;
+      color: #fff;
+      font-size: 28px;
+      border-radius: 36px;
+      padding: 0;
+      margin: 0;
+
+      &:active {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .input-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+
+    .input-content {
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      
+      .preview-image {
+        width: 100%;
+        height: 400px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .content-input {
+        width: 100%;
+        height: 200px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        padding: 20px;
+        font-size: 28px;
+        margin-bottom: 20px;
+      }
+
+      .button-group {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+
+        button {
+          flex: 1;
+          height: 80px;
+          line-height: 80px;
+          font-size: 28px;
+          border-radius: 40px;
+          
+          &.cancel-btn {
+            background: #f5f5f5;
+            color: #666;
+          }
+          
+          &.save-btn {
+            background: #1296db;
+            color: #fff;
+          }
+
+          &:active {
+            opacity: 0.8;
+          }
+        }
+      }
+    }
+  }
+
+  .record-list {
+    padding: 0 20px;
+
+    .record-item {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      .record-image {
+        width: 100%;
+        height: 400px;
+      }
+
+      .record-info {
+        padding: 20px;
+
+        .record-content {
+          font-size: 28px;
+          color: #333;
+          margin-bottom: 10px;
+          display: block;
+        }
+
+        .record-time {
+          font-size: 24px;
+          color: #999;
+        }
+      }
+    }
+  }
+} 

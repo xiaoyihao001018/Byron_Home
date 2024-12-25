@@ -1,7 +1,7 @@
 import Taro from '@tarojs/taro'
 
 // 基础URL
-const baseURL = 'http://localhost:8080'
+export const baseURL = 'http://localhost:8080'
 
 // 响应数据接口
 interface ResponseData<T = any> {

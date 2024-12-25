@@ -3,6 +3,7 @@ export default defineAppConfig({
     'pages/login/index',
     'pages/home/index',
     'pages/profile/index',
+    'pages/record/index'
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -22,6 +23,12 @@ export default defineAppConfig({
         text: '首页',
         iconPath: './assets/tabbar/home.png',
         selectedIconPath: './assets/tabbar/home-active.png'
+      },
+      {
+        pagePath: 'pages/record/index',
+        text: '记录',
+        iconPath: './assets/tabbar/record.png',
+        selectedIconPath: './assets/tabbar/record-active.png'
       },
       {
         pagePath: 'pages/profile/index',
