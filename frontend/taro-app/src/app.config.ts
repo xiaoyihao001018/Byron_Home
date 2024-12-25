@@ -4,7 +4,8 @@ export default defineAppConfig({
     'pages/record/index',
     'pages/dates/index',
     'pages/profile/index',
-    'pages/login/index'
+    'pages/login/index',
+    'pages/todo/index'
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -36,6 +37,12 @@ export default defineAppConfig({
         text: '纪念日',
         iconPath: './assets/tabbar/date.png',
         selectedIconPath: './assets/tabbar/date-active.png'
+      },
+      {
+        pagePath: 'pages/todo/index',
+        text: '待办',
+        iconPath: './assets/tabbar/todo.png',
+        selectedIconPath: './assets/tabbar/todo-active.png'
       },
       {
         pagePath: 'pages/profile/index',
