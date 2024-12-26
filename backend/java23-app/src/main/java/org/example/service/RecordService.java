@@ -26,4 +26,11 @@ public interface RecordService extends IService<Record> {
      * 删除记录
      */
     void deleteRecord(Long recordId, Long userId);
+    
+    /**
+     * 获取最近记录
+     * @param userId 用户ID
+     * @return 记录列表
+     */
+    List<Record> getRecentRecords(Long userId);
 } 

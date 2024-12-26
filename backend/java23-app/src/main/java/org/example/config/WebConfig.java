@@ -2,9 +2,11 @@ package org.example.config;
 
 import lombok.RequiredArgsConstructor;
 import org.example.interceptor.AuthInterceptor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -12,6 +14,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;
+    
+    @Value("${upload.path:/uploads}")
+    private String uploadPath;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -22,8 +27,16 @@ public class WebConfig implements WebMvcConfigurer {
                         "/swagger-resources/**",  // Swagger
                         "/swagger-ui/**",        // Swagger UI
                         "/v2/api-docs",          // Swagger API docs
-                        "/doc.html"              // Knife4j
+                        "/doc.html",             // Knife4j
+                        "/uploads/**"            // 静态资源
                 );
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 配置静态资源映射
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + uploadPath + "/");
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.example.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -103,5 +104,16 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         remove(new LambdaQueryWrapper<Record>()
                 .eq(Record::getId, recordId)
                 .eq(Record::getUserId, userId));
+    }
+
+    @Override
+    public List<Record> getRecentRecords(Long userId) {
+        // 使用 QueryWrapper 构建查询条件
+        QueryWrapper<Record> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userId)
+                    .orderByDesc("created_at")
+                    .last("LIMIT 3"); // 只返回最近的3条记录
+        
+        return baseMapper.selectList(queryWrapper);
     }
 } 

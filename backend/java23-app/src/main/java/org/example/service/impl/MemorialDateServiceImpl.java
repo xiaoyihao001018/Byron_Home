@@ -91,6 +91,47 @@ public class MemorialDateServiceImpl extends ServiceImpl<MemorialDateMapper, Mem
                 .map(this::calculateDaysLeft)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<MemorialDate> getUpcomingDates(Long userId) {
+        // 获取用户的所有纪念日
+        List<MemorialDate> allDates = getUserDates(userId);
+        
+        // 获取当前日期
+        LocalDate now = LocalDate.now();
+        
+        // 过滤并排序纪念日
+        return allDates.stream()
+            .filter(date -> {
+                LocalDate dateValue = LocalDate.parse(date.getDate().toString());
+                // 如果是今年的日期已经过了，就计算明年的日期
+                if (dateValue.withYear(now.getYear()).isBefore(now)) {
+                    dateValue = dateValue.withYear(now.getYear() + 1);
+                } else {
+                    dateValue = dateValue.withYear(now.getYear());
+                }
+                // 只返回未来30天内的纪念日
+                return !dateValue.isBefore(now) && dateValue.isBefore(now.plusDays(30));
+            })
+            .sorted((a, b) -> {
+                LocalDate dateA = LocalDate.parse(a.getDate().toString());
+                LocalDate dateB = LocalDate.parse(b.getDate().toString());
+                // 如果日期已过，使用明年的日期
+                if (dateA.withYear(now.getYear()).isBefore(now)) {
+                    dateA = dateA.withYear(now.getYear() + 1);
+                } else {
+                    dateA = dateA.withYear(now.getYear());
+                }
+                if (dateB.withYear(now.getYear()).isBefore(now)) {
+                    dateB = dateB.withYear(now.getYear() + 1);
+                } else {
+                    dateB = dateB.withYear(now.getYear());
+                }
+                return dateA.compareTo(dateB);
+            })
+            .limit(3) // 只返回最近的3个纪念日
+            .collect(Collectors.toList());
+    }
     
     /**
      * 计算剩余天数或已过天数

@@ -64,4 +64,11 @@ public class RecordController {
         recordService.deleteRecord(id, userId);
         return R.ok();
     }
+
+    @ApiOperation("获取最近记录")
+    @GetMapping("/recent")
+    public R<List<Record>> getRecentRecords(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return R.ok(recordService.getRecentRecords(userId));
+    }
 } 

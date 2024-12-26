@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.common.R;
 import org.example.entity.MemorialDate;
 import org.example.service.MemorialDateService;
+import org.example.utils.UserContext;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +44,7 @@ public class MemorialDateController {
         return R.ok();
     }
 
-    @ApiOperation("获取纪念日列表")
+    @ApiOperation("获取���念日列表")
     @GetMapping("/list")
     public R<List<MemorialDate>> getDateList(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -57,11 +58,16 @@ public class MemorialDateController {
         return R.ok(memorialDateService.getUserPeriods(userId));
     }
 
-    @ApiOperation("获取最近提醒")
+    @ApiOperation("获取即将到来的纪念日")
     @GetMapping("/upcoming")
-    public R<List<MemorialDate>> getUpcoming(@RequestParam(defaultValue = "7") Integer days, 
-                                           HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        return R.ok(memorialDateService.getUpcomingReminders(userId, days));
+    public R<List<MemorialDate>> getUpcomingDates() {
+        Long userId = UserContext.getCurrentUserId();
+        try {
+            List<MemorialDate> dates = memorialDateService.getUpcomingDates(userId);
+            return R.ok(dates);
+        } catch (Exception e) {
+            log.error("获取即将到来的纪念日失败", e);
+            return R.error("获取即将到来的纪念日失败");
+        }
     }
 } 

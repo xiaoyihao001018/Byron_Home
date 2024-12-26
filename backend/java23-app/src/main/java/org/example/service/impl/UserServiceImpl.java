@@ -57,16 +57,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .compact();
     }
 
-    @Override
-    public Map<String, Object> wxLogin(String code) {
-        log.info("开始处理微信登录请求, code: {}", code);
+    /**
+     * 获取微信openid
+     */
+    private String getOpenid(String code) {
         try {
-            // 调用微信接口获取openid
             String url = String.format(
                 "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
-                wxConfig.getMiniapp().getAppid(), wxConfig.getMiniapp().getSecret(), code
+                wxConfig.getMiniapp().getAppid(),
+                wxConfig.getMiniapp().getSecret(),
+                code
             );
-            log.info("准备调用微信接口, URL: {}", url);
             
             // 设置请求头
             HttpHeaders headers = new HttpHeaders();
@@ -74,68 +75,62 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<?> entity = new HttpEntity<>(headers);
             
-            ResponseEntity<String> wxResponse = restTemplate.exchange(
+            ResponseEntity<String> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
                 entity,
                 String.class
             );
             
-            String responseBody = wxResponse.getBody();
-            log.info("微信接口返回结果: {}", responseBody);
-            
+            String responseBody = response.getBody();
             if (responseBody == null) {
-                log.error("微信接口返回空结果");
-                throw new RuntimeException("微信登录失败: 接口返回为空");
+                throw new RuntimeException("微信接口返回为空");
             }
             
             Map<String, String> result = objectMapper.readValue(responseBody, Map.class);
             
             if (result.containsKey("errcode") && !"0".equals(result.get("errcode"))) {
-                log.error("微信接口返回错误: errcode={}, errmsg={}", 
-                    result.get("errcode"), result.get("errmsg"));
-                throw new RuntimeException("微信登录失败: " + result.get("errmsg"));
+                throw new RuntimeException("微信接口返回错误: " + result.get("errmsg"));
             }
             
-            String openid = result.get("openid");
-            String sessionKey = result.get("session_key");
-            log.info("获取到openid: {}", openid);
-            
-            // 查找或创建用户
-            User user = getOne(new LambdaQueryWrapper<User>()
-                .eq(User::getOpenid, openid));
-            
+            return result.get("openid");
+        } catch (Exception e) {
+            log.error("获取openid失败", e);
+            throw new RuntimeException("获取openid失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 根据openid获取用户
+     */
+    private User getUserByOpenid(String openid) {
+        return getOne(new LambdaQueryWrapper<User>()
+            .eq(User::getOpenid, openid));
+    }
+
+    @Override
+    public User wxLogin(String code) {
+        try {
+            // 调用微信接口获取openid
+            String openid = getOpenid(code);
+            if (openid == null || openid.isEmpty()) {
+                throw new RuntimeException("获取openid失败");
+            }
+
+            // 根据openid查询用户
+            User user = getUserByOpenid(openid);
             if (user == null) {
-                log.info("用户不存在，创建新用户, openid: {}", openid);
+                // 如果用户不存在，创建新用户
                 user = new User();
                 user.setOpenid(openid);
-                user.setSessionKey(sessionKey);
-                user.setStatus(1); // 设置状态为正常
                 user.setCreatedAt(LocalDateTime.now());
                 user.setUpdatedAt(LocalDateTime.now());
                 save(user);
-                log.info("新用户创建成功, userId: {}", user.getId());
-            } else {
-                log.info("更新已存在用户信息, userId: {}", user.getId());
-                user.setSessionKey(sessionKey);
-                user.setUpdatedAt(LocalDateTime.now());
-                updateById(user);
-                log.info("用户信息更新成功");
             }
-            
-            // 生成 JWT token
-            String token = generateToken(user);
-            
-            // 返回用户信息和token
-            Map<String, Object> loginResponse = new HashMap<>();
-            loginResponse.put("token", token);
-            loginResponse.put("user", user);
-            
-            log.info("微信登录成功, userId: {}", user.getId());
-            return loginResponse;
-            
+
+            return user;
         } catch (Exception e) {
-            log.error("微信登录过程发生异常", e);
+            log.error("微信登录失败", e);
             throw new RuntimeException("微信登录失败: " + e.getMessage());
         }
     }

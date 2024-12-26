@@ -1,15 +1,15 @@
 package org.example.interceptor;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.example.utils.JwtUtils;
+import org.example.utils.UserContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AuthInterceptor implements HandlerInterceptor {
@@ -23,33 +23,43 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 获取token
+        // 从请求头中获取token
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
 
-        // 验证token
         if (token == null || token.isEmpty()) {
             response.setStatus(401);
             return false;
         }
 
-        // 验证token是否过期
-        if (jwtUtils.isTokenExpired(token)) {
+        try {
+            // ���证token
+            if (!jwtUtils.validateToken(token)) {
+                response.setStatus(401);
+                return false;
+            }
+
+            // 获取用户ID
+            Long userId = jwtUtils.getUserIdFromToken(token);
+            
+            // 将用户ID存储到request中，方便后续使用
+            request.setAttribute("userId", userId);
+            
+            // 设置用户ID到UserContext中
+            UserContext.setCurrentUserId(userId);
+            
+            return true;
+        } catch (Exception e) {
             response.setStatus(401);
             return false;
         }
+    }
 
-        // 获取用户ID
-        Long userId = jwtUtils.getUserIdFromToken(token);
-        if (userId == null) {
-            response.setStatus(401);
-            return false;
-        }
-
-        // 将用户ID存入request中，后续接口可以使用
-        request.setAttribute("userId", userId);
-        return true;
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        // 清理UserContext
+        UserContext.clear();
     }
 } 

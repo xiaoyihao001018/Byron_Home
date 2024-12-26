@@ -4,7 +4,7 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/byron_home?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/byron_home?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 123456
   
@@ -30,8 +30,8 @@ spring:
 
 mybatis-plus:
   configuration:
-    map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
   global-config:
     db-config:
       logic-delete-field: deleted
@@ -52,9 +52,9 @@ knife4j:
     language: zh-CN
 
 jwt:
-  secret: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
-  expiration: 86400000
+  secret: byronhomebyronhomebyronhomebyronhomebyronhomebyronhomebyronhomebyronhome  # 至少256位
+  expiration: 604800  # 7天，单位：秒
 
 # 文件上传配置
 upload:
-  path: C:/uploads
+  path: C:/uploads  # Windows系统使用C:/uploads，Linux系统使用/uploads

@@ -1,207 +1,143 @@
-import { View, Text, Image, Button, Textarea } from '@tarojs/components'
-import Taro, { useLoad } from '@tarojs/taro'
+import { View, Text, Image, Button } from '@tarojs/components'
+import Taro, { useLoad, useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
-import request, { baseURL } from '../../utils/request'
+import request from '../../utils/request'
 import './index.scss'
 
 interface Record {
   id: number
-  userId: number
   imageUrl: string
   content: string
-  location?: string
   createdAt: string
-  updatedAt: string
 }
 
 export default function Record() {
   const [records, setRecords] = useState<Record[]>([])
-  const [loading, setLoading] = useState(false)
-  const [showInput, setShowInput] = useState(false)
-  const [content, setContent] = useState('')
-  const [tempImage, setTempImage] = useState<{
-    path: string
-    location?: { latitude: number; longitude: number }
-  } | null>(null)
 
+  // 页面首次加载时检查登录状态
   useLoad(() => {
+    checkLoginStatus()
+  })
+
+  // 每次页面显示时刷新数据
+  useDidShow(() => {
     loadRecords()
   })
 
-  // 加载记录列表
+  const checkLoginStatus = () => {
+    // 检查登录状态
+    const token = Taro.getStorageSync('token')
+    const userInfo = Taro.getStorageSync('userInfo')
+    
+    if (!token || !userInfo) {
+      Taro.redirectTo({
+        url: '/pages/login/index'
+      })
+      return false
+    }
+    return true
+  }
+
   const loadRecords = async () => {
+    // 先检查登录状态
+    if (!checkLoginStatus()) {
+      return
+    }
+
     try {
-      const data = await request<Record[]>({
+      const res = await request<Record[]>({
         url: '/api/record/list',
         method: 'GET'
       })
-      setRecords(data)
+      console.log('加载记录:', res)
+      setRecords(res || [])
     } catch (error) {
       console.error('加载记录失败:', error)
-    }
-  }
-
-  // 选择图片
-  const handleChooseImage = async () => {
-    try {
-      // 选择图片
-      const res = await Taro.chooseImage({
-        count: 1,
-        sizeType: ['compressed'],
-        sourceType: ['album', 'camera']
-      })
-
-      // 获取位置信息
-      const location = await Taro.getLocation({
-        type: 'gcj02'
-      }).catch(() => null)
-
-      setTempImage({
-        path: res.tempFilePaths[0],
-        location: location ? { 
-          latitude: location.latitude, 
-          longitude: location.longitude 
-        } : undefined
-      })
-      setShowInput(true)
-    } catch (error) {
-      console.error('选择图片失败:', error)
       Taro.showToast({
-        title: '选择图片失败',
-        icon: 'none'
+        title: '加载记录失败',
+        icon: 'error'
       })
     }
   }
 
-  // 保存记录
-  const handleSave = async () => {
-    if (!tempImage) return
-
-    try {
-      setLoading(true)
-      // 上传图片
-      const uploadRes = await Taro.uploadFile({
-        url: baseURL + '/api/record/upload',
-        filePath: tempImage.path,
-        name: 'file',
-        header: {
-          'Authorization': `Bearer ${Taro.getStorageSync('token')}`
+  const handleAddRecord = () => {
+    Taro.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: async (res) => {
+        const tempFilePath = res.tempFilePaths[0]
+        
+        try {
+          // 上传图片
+          const uploadRes = await Taro.uploadFile({
+            url: 'http://localhost:8080/api/record/upload',
+            filePath: tempFilePath,
+            name: 'file',
+            header: {
+              'Authorization': `Bearer ${Taro.getStorageSync('token')}`
+            }
+          })
+          
+          const uploadData = JSON.parse(uploadRes.data)
+          console.log('上传响应:', uploadData)
+          
+          if (uploadData.code !== 200) {
+            throw new Error(uploadData.message || '上传失败')
+          }
+          
+          const imageUrl = uploadData.data
+          
+          // 创建记录
+          await request({
+            url: '/api/record/create',
+            method: 'POST',
+            data: {
+              imageUrl,
+              content: '新的记录'
+            }
+          })
+          
+          // 重新加载记录列表
+          loadRecords()
+          
+          Taro.showToast({
+            title: '添加成功',
+            icon: 'success'
+          })
+        } catch (error) {
+          console.error('添加记录失败:', error)
+          Taro.showToast({
+            title: '添加记录失败',
+            icon: 'error'
+          })
         }
-      })
-
-      // 解析上传响应
-      const uploadData = JSON.parse(uploadRes.data)
-      if (uploadData.code !== 200) {
-        throw new Error(uploadData.message || '上传图片失败')
       }
-      const imageUrl = uploadData.data
-
-      // 创建记录
-      await request({
-        url: '/api/record/create',
-        method: 'POST',
-        data: {
-          imageUrl,
-          content: content || '美好的一刻',
-          location: tempImage.location 
-            ? `${tempImage.location.latitude},${tempImage.location.longitude}` 
-            : undefined
-        }
-      })
-
-      // 重新加载记录列表
-      loadRecords()
-      // 清理临时状态
-      setShowInput(false)
-      setContent('')
-      setTempImage(null)
-      
-      Taro.showToast({
-        title: '添加成功',
-        icon: 'success'
-      })
-    } catch (error) {
-      console.error('添加记录失败:', error)
-      Taro.showToast({
-        title: error.message || '添加失败',
-        icon: 'none'
-      })
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
     <View className='record-container'>
-      <View className='header'>
-        <Text className='title'>生活记录</Text>
-        <Button 
-          className='add-btn' 
-          onClick={handleChooseImage}
-          loading={loading}
-        >
-          记录此刻
-        </Button>
-      </View>
-
-      {showInput && tempImage && (
-        <View className='input-modal'>
-          <View className='input-content'>
-            <Image 
-              className='preview-image' 
-              src={tempImage.path} 
-              mode='aspectFill' 
-            />
-            <Textarea
-              className='content-input'
-              value={content}
-              onInput={e => setContent(e.detail.value)}
-              placeholder='记录这一刻的想法...'
-              maxlength={200}
-            />
-            <View className='button-group'>
-              <Button 
-                className='cancel-btn' 
-                onClick={() => {
-                  setShowInput(false)
-                  setContent('')
-                  setTempImage(null)
-                }}
-              >
-                取消
-              </Button>
-              <Button 
-                className='save-btn' 
-                onClick={handleSave}
-                loading={loading}
-              >
-                保存
-              </Button>
-            </View>
-          </View>
-        </View>
-      )}
-
-      <View className='record-list'>
+      <View className='records-list'>
         {records.map(record => (
           <View key={record.id} className='record-item'>
             <Image 
               className='record-image' 
-              src={baseURL + record.imageUrl} 
-              mode='aspectFill'
-              onClick={() => {
-                Taro.previewImage({
-                  urls: [baseURL + record.imageUrl]
-                })
-              }}
+              src={`http://localhost:8080${record.imageUrl}`} 
+              mode='aspectFill' 
             />
-            <View className='record-info'>
-              <Text className='record-content'>{record.content || '美好的一刻'}</Text>
-              <Text className='record-time'>{record.createdAt}</Text>
-            </View>
+            <Text className='record-content'>{record.content}</Text>
+            <Text className='record-date'>{record.createdAt.split('T')[0]}</Text>
           </View>
         ))}
+        {records.length === 0 && (
+          <Text className='empty-text'>暂无记录</Text>
+        )}
       </View>
+      
+      <Button className='add-button' onClick={handleAddRecord}>
+        添加记录
+      </Button>
     </View>
   )
 } 

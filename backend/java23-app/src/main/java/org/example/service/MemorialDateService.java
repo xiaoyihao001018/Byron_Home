@@ -35,4 +35,11 @@ public interface MemorialDateService extends IService<MemorialDate> {
      * 获取最近的提醒
      */
     List<MemorialDate> getUpcomingReminders(Long userId, Integer days);
+    
+    /**
+     * 获取即将到来的纪念日
+     * @param userId 用户ID
+     * @return 纪念日列表
+     */
+    List<MemorialDate> getUpcomingDates(Long userId);
 } 
